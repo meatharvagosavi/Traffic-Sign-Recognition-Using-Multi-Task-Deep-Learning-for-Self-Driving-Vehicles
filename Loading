@@ -1,0 +1,50 @@
+#sets path
+source_dir = "not_stopandstop/final-project-stop-signs-1-2025-04-25-t-06-47-41-058-z"  # folder containing images and annotation file
+annotations_file = os.path.join(source_dir, "_annotations.json")  # update name if needed
+
+
+# Load annotations
+with open(annotations_file, "r") as f:
+    annotations = json.load(f)
+
+
+# Parameters
+train_ratio = 0.9
+output_dir = "dataset"  # Final output root directory
+
+
+# Prepare label -> image list
+label_to_images = {}
+
+for filename, entry in annotations["annotations"].items():
+    label = entry[0]["label"]
+    label_to_images.setdefault(label, []).append(filename)
+
+
+# Shuffle and split each class into training and validation sets
+for label, image_list in label_to_images.items():
+    random.shuffle(image_list)  # Shuffle the list of images to randomize the split
+    
+    # Calculate the number of training images (e.g., 90% of total)
+    train_cutoff = int(len(image_list) * train_ratio)
+    
+    # Split the image list into training and validation sets
+    train_images = image_list[:train_cutoff]
+    val_images = image_list[train_cutoff:]
+
+    # Loop over both splits: 'train' and 'val'
+    for split, split_images in zip(["train", "val"], [train_images, val_images]):
+        
+        # Create the output directory for the current split and label
+        # Example: dataset/train/not_stop or dataset/val/stop
+        out_path = os.path.join(output_dir, split, label)
+        os.makedirs(out_path, exist_ok=True)  # Create the directory if it doesn't exist
+
+        # Copy each image from the source directory to the appropriate split folder
+        for img_name in split_images:
+            src = os.path.join(source_dir, img_name)  # Full path to the source image
+            dst = os.path.join(out_path, img_name)    # Destination path
+            shutil.copy2(src, dst)  # Copy the image (preserves metadata)
+
+# Print completion message once all images are copied
+print("Train/Val split complete.")
