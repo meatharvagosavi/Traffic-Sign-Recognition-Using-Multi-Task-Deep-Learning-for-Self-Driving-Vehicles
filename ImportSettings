@@ -1,0 +1,35 @@
+#libraries for OS
+import os
+import uuid
+import shutil
+import json
+import copy
+from datetime import datetime
+import zipfile
+import io
+import requests
+import random
+
+
+#libraries for data visualisation
+from PIL import Image
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import math
+from matplotlib.pyplot import imshow
+from tqdm import tqdm
+from ipywidgets import IntProgress
+import time 
+
+
+#deep learning libraries
+import torch
+import torchvision.models as models
+from torch.utils.data import Dataset, DataLoader,random_split
+from torch.optim import lr_scheduler
+from torchvision import transforms
+import torch.nn as nn
+torch.manual_seed(0)
+from torchvision.datasets import ImageFolder
+from torchvision import transforms
