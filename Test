@@ -1,0 +1,8 @@
+# Use the stored training loss and validation accuracy to plot learning curves
+plot_stuff(loss_list, accuracy_list)
+
+
+!wget "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/ko-rMe71oPApYpUj2urgFQ/stop-1.jpeg"
+!wget "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/2oSHTMfHikZvnhKypHO9Uw/stop-2.jpeg"
+!wget "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/6GVQqlNsZ83-me4L9DzAIg/not-stop-1.jpeg"
+!wget "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/47aCgskKGqJTYmIkvV6_mA/not-stop-2.jpeg"
