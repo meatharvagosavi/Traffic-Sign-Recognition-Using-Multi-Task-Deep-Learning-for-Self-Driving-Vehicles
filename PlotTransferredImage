@@ -1,0 +1,26 @@
+def imshow_(inp, title=None):
+    """
+    Displays a tensor image after reversing normalization.
+    
+    Parameters:
+    - inp (Tensor): Image tensor of shape [C, H, W], usually normalized.
+    - title (str, optional): Title for the image display.
+    """
+    # Convert from [C, H, W] to [H, W, C] and to NumPy array
+    inp = inp.permute(1, 2, 0).numpy()
+    print("Image shape:", inp.shape)
+
+    # Undo normalization (ImageNet mean and std)
+    mean = np.array([0.485, 0.456, 0.406])
+    std = np.array([0.229, 0.224, 0.225])
+    inp = std * inp + mean
+
+    # Clip values to [0, 1] range for display
+    inp = np.clip(inp, 0, 1)
+
+    # Display image
+    plt.imshow(inp)
+    if title is not None:
+        plt.title(title)
+    plt.pause(0.001)  # Short pause for GUI update
+    plt.show()
