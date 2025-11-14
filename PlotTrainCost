@@ -1,0 +1,33 @@
+def plot_stuff(COST, ACC):
+    """
+    Plots training cost (loss) and validation accuracy on the same figure using two y-axes.
+    
+    Parameters:
+    COST (list or array): Total training loss per iteration (or epoch)
+    ACC (list or array): Validation accuracy per iteration (or epoch)
+    """
+    
+    # Create a new figure and a primary axis (ax1)
+    fig, ax1 = plt.subplots()
+    
+    # Plot training loss on the primary y-axis (left)
+    color = 'tab:red'
+    ax1.plot(COST, color=color)
+    ax1.set_xlabel('Iteration', color=color)            # Label for x-axis
+    ax1.set_ylabel('Total Loss', color=color)           # Label for y-axis (left)
+    ax1.tick_params(axis='y', labelcolor=color)         # Set y-axis tick color
+
+    # Create a secondary y-axis (ax2) sharing the same x-axis
+    ax2 = ax1.twinx()
+    
+    # Plot validation accuracy on the secondary y-axis (right)
+    color = 'tab:blue'
+    ax2.set_ylabel('Accuracy', color=color)             # Label for y-axis (right)
+    ax2.plot(ACC, color=color)
+    ax2.tick_params(axis='y', labelcolor=color)
+
+    # Adjust layout to prevent y-label clipping
+    fig.tight_layout()
+    
+    # Display the combined plot
+    plt.show()
