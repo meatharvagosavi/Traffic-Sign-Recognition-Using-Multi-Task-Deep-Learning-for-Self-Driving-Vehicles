@@ -1,0 +1,14 @@
+# URL of the ZIP file
+url = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/ExisQFol3hUHktTjm6a51w/final-project-stop-signs-1-2025-04-25-t-06-47-41-058-z.zip"
+
+# Send a GET request to the URL
+response = requests.get(url)
+
+# Check if the request was successful
+if response.status_code == 200:
+    # Open the zip file from the downloaded content
+    with zipfile.ZipFile(io.BytesIO(response.content)) as zip_ref:
+        zip_ref.extractall("not_stopandstop")  # Extract to a target folder
+    print("Download and extraction complete.")
+else:
+    print("Failed to download file:", response.status_code)
