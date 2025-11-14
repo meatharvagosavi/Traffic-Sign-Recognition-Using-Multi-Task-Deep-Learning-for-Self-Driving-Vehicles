@@ -1,0 +1,155 @@
+# Set the number of epochs and batch size
+n_epochs = 10       # A typical small number like 10
+batch_size = 32     # Try 32
+
+
+
+# Set optimizer hyperparameters
+learning_rate = 0.000001     # Example small learning rate
+momentum = 0.9               # Typical momentum value
+
+
+
+# Enable learning rate scheduling
+lr_scheduler = True           # Set True or False to control usage
+base_lr = 0.001               # Minimum learning rate (e.g., 0.001)
+max_lr = 0.01                 # Maximum learning rate (e.g., 0.01)
+
+
+
+# Set the parameter pretrained to true.
+model = models.resnet18(pretrained=True)
+
+
+
+# Freeze all the parameters to prevent updates during training
+for param in model.parameters():
+    param.requires_grad = False
+
+
+
+# Find number of classes from the dataset
+n_classes = len(train_dataset.classes)
+print(n_classes)
+
+
+
+# Replace the output layer to match the number of classes
+model.fc = nn.Linear(512, n_classes)
+
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+
+
+
+# Define the loss function for multi-class classification
+criterion = nn.CrossEntropyLoss()
+
+
+
+# Create data loaders for training and validation
+train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+validation_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=1)
+
+
+
+# Initialize the optimizer
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
+
+
+
+# Optional: use learning rate scheduler
+if lr_scheduler:
+    scheduler = torch.optim.lr_scheduler.CyclicLR(
+        optimizer,
+        base_lr=base_lr,        # Minimum learning rate e.g. 0.001
+        max_lr=max_lr,          # Maximum learning rate e.g. 0.01
+        step_size_up=5,
+        mode="triangular2"
+    )
+
+
+
+def train_model(model, train_loader, validation_loader, criterion, optimizer, n_epochs, print_=True):
+    loss_list = []        # Store average training loss per epoch
+    accuracy_list = []    # Store validation accuracy per epoch
+    correct = 0
+
+    n_test = len(val_dataset)
+    accuracy_best = 0
+    best_model_wts = copy.deepcopy(model.state_dict())  # initial weights
+
+    print("The first epoch should take several minutes")
+
+    for epoch in tqdm(range(n_epochs)):
+        loss_sublist = []
+
+        for x, y in train_loader:
+            x, y = x.to(device), y.to(device)
+            model.train()   # Set model to training mode
+
+            z = model(x)
+            loss = criterion(z, y)
+            loss_sublist.append(loss.item())
+
+            loss.backward()        # Backpropagation
+            optimizer.step()       # Update weights
+            optimizer.zero_grad()  # Reset gradients
+
+        print(f"Epoch {epoch + 1} done")
+
+        # Step learning rate scheduler (if used)
+        try:
+            scheduler.step()
+        except NameError:
+            # scheduler not defined — skip
+            pass
+
+        loss_list.append(np.mean(loss_sublist))
+
+        # Validation
+        correct = 0
+        model.eval()
+        with torch.no_grad():
+            for x_test, y_test in validation_loader:
+                x_test, y_test = x_test.to(device), y_test.to(device)
+                z = model(x_test)
+                _, yhat = torch.max(z.data, 1)
+                correct += (yhat == y_test).sum().item()
+
+        accuracy = correct / n_test
+        accuracy_list.append(accuracy)
+
+        if accuracy > accuracy_best:
+            accuracy_best = accuracy
+            best_model_wts = copy.deepcopy(model.state_dict())
+
+        if print_:
+            print("Learning rate:", optimizer.param_groups[0]['lr'])
+            print(f"Validation loss (epoch {epoch + 1}): {np.mean(loss_sublist):.4f}")
+            print(f"Validation accuracy (epoch {epoch + 1}): {accuracy:.4f}")
+
+    model.load_state_dict(best_model_wts)
+    return accuracy_list, loss_list, model
+
+
+# Start time tracking
+start_datetime = datetime.now()
+start_time = time.time()
+
+# Train the model
+accuracy_list, loss_list, model = train_model(
+    model, train_loader, validation_loader, criterion, optimizer, n_epochs=n_epochs
+)
+
+# End time tracking
+end_datetime = datetime.now()
+elapsed_time = time.time() - start_time
+
+# Print results
+print("Training completed.")
+print(f"Start Time     : {start_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+print(f"End Time       : {end_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+print(f"Elapsed Time   : {elapsed_time:.2f} seconds")
+
